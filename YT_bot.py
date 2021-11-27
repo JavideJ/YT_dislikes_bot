@@ -2,7 +2,8 @@ from googleapiclient.discovery import build
 import tweepy
 import os
 from dotenv import load_dotenv
-from time import sleep  
+from time import sleep
+import pymongo
 
 
 load_dotenv()
@@ -16,6 +17,9 @@ access_token_secret = os.environ['access_token_secret']
 #YouTube
 api_key = os.environ['api_key']
 
+#MongoDB
+mongo_client = os.environ['mongo_client']
+
 
 def dislikes():
 
@@ -26,31 +30,29 @@ def dislikes():
 
     #YouTube
     youtube = build('youtube', 'v3', developerKey=api_key)                  #YouTube API authentication
-
-    global set_id_tweets
-
-    try:
-
-        set_id_tweets_anterior = set_id_tweets.copy()                       #make a copy to be used later on to compare new list of mentions to the old one
-
-    except:
-
-        set_id_tweets_anterior = set()
+    
+    #MongoDB
+    db = pymongo.MongoClient(mongo_client)
+    dbtwitter_bot = db.twitter_bot.mentions_list
+    answered_tweets_id = [k['id_'] for k in dbtwitter_bot.find()]             #list of tweets already answered
+    
 
     set_id_tweets = set() 
-    tweets = api.mentions_timeline(count=10, tweet_mode='extended')          #List of last 10 tweets tagging me
+    tweets = api.mentions_timeline(count=20, tweet_mode='extended')          #List of last 10 tweets tagging me
 
     for tweet in tweets:
 
         set_id_tweets.add(tweet.id)
 
-    lista_tweets = [tweet for tweet in tweets if tweet.id not in set_id_tweets_anterior]     #List of new tweets tagging me from checking if these tweets were in the old list
+    tweets_list = [tweet for tweet in tweets if tweet.id not in answered_tweets_id]     #List of new tweets tagging me from checking if these tweets were in the old list
 
-    if len(lista_tweets) == 0:
+    if len(tweets_list) == 0:
 
         return 
 
-    for tweet in lista_tweets:
+    
+    
+    for tweet in tweets_list:
 
         try:                                                                                        #links are different if they come from a browser or from the YouTube app
 
@@ -74,6 +76,7 @@ def dislikes():
         except:
             pass
 
+        
         try:                
 
             request = youtube.videos().list(part = 'statistics', id = url_id)                       #on this part, we get the stats from the given YouTube video and generate
@@ -90,6 +93,9 @@ def dislikes():
 
         except:
             pass
+        
+        mongo_tweet = {'id_': tweet.id, 'date': tweet.created_at}
+        result = dbtwitter_bot.insert_one(mongo_tweet)
 
     
     return 
