@@ -67,7 +67,7 @@ def dislikes():
                                                                                                     #happen that the link provided is not from YouTube
         try:
 
-            yt_from_cell = tweett.entities['urls'][0]['expanded_url'].split(r'://')[1][:8]
+            yt_from_cell = tweet.entities['urls'][0]['expanded_url'].split(r'://')[1][:8]
 
             if  yt_from_cell == 'youtu.be':
 
