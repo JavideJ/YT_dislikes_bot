@@ -1,11 +1,15 @@
+import numpy as np
 from googleapiclient.discovery import build
 import tweepy
 import os
 from time import sleep
 import pymongo
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from PIL import Image
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 #Twitter
@@ -19,9 +23,6 @@ api_key = os.environ['api_key']
 
 #MongoDB
 mongo_client = os.environ['mongo_client']
-
-#Chromedriver
-chrome_driver = os.environ['chrome_driver_path']
 
 
 def dislikes():
@@ -75,7 +76,10 @@ def dislikes():
             link_check += 1
 
 
-        if link_check == 2:                       #If link_check == 2 means that the url is not a YouTube video
+        if link_check == 2:                                                           #If link_check == 2 means that the url is not a YouTube video
+            mongo_tweet = {'id_': tweet.id, 'date': tweet.created_at}
+            result = dbtwitter_bot.insert_one(mongo_tweet) 
+            
             return
 
 
@@ -85,13 +89,14 @@ def dislikes():
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_extension(os.environ['return_dislikes_path'])                       #Here we add the dislikes YouTube extension from https://github.com/Anarios/return-youtube-dislike
                                                                                                    #We didn´t need it before but now is impossible to retrieve the number of dislikes from the API
-            driver = webdriver.Chrome(executable_path=chrome_driver, options=chrome_options)
+                
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
             driver.get(tweet.entities['urls'][0]['expanded_url'])                                  #with Selenium, open the YouTube link in Chrome
 
-            sleep(5)
+            sleep(7)
 
-            driver.find_elements_by_xpath('/html/body/ytd-app/ytd-consent-bump-v2-lightbox/tp-yt-paper-dialog/div[4]/div[2]/div[5]/div[2]/ytd-button-renderer[2]/a/tp-yt-paper-button')[0].click()
+            driver.find_element(By.XPATH, '/html/body/ytd-app/ytd-consent-bump-v2-lightbox/tp-yt-paper-dialog/div[4]/div[2]/div[5]/div[2]/ytd-button-renderer[2]/a/tp-yt-paper-button').click()
 
             sleep(3)
 
@@ -103,7 +108,7 @@ def dislikes():
 
             img = Image.open('screenshot.png')                         #Get the image, crop it and save it
             img = np.array(img)
-            crop_img = img[620:670, 370:]                        
+            crop_img = img[670:730, 370:]                        
             crop_img = Image.fromarray(crop_img)
 
             crop_img.save('cropped_screenshot.png')
