@@ -5,7 +5,7 @@ from time import sleep
 import pymongo
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import cv2
+from PIL import Image
 
 
 #Twitter
@@ -101,10 +101,12 @@ def dislikes():
 
             driver.quit()
 
-            img = cv2.imread("screenshot.png")
-            crop_img = img[620:670, 370:]                         #Crop the picture and ivert colors
-            crop_img = (255-crop_img)
-            cv2.imwrite('cropped_screen.png', crop_img)
+            img = Image.open('screenshot.png')                         #Get the image, crop it and save it
+            img = np.array(img)
+            crop_img = img[620:670, 370:]                        
+            crop_img = Image.fromarray(crop_img)
+
+            crop_img.save('cropped_screenshot.png')
 
 
             request = youtube.videos().list(part = ['snippet'], id = url_id)            #YouTube Data API to get the title of the video
@@ -112,7 +114,7 @@ def dislikes():
             response = request.execute()
             title = response['items'][0]['snippet']['title']
 
-            api.update_status_with_media(status = title , filename = "cropped_screen.png", in_reply_to_status_id = tweet.id)            #Answer the tweet with the title of the video and the
+            api.update_status_with_media(status = title , filename = "cropped_screenshot.png", in_reply_to_status_id = tweet.id)            #Answer the tweet with the title of the video and the
                                                                                                                                         #screenshot with the number of dislikes
                                 
         except:
