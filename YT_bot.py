@@ -90,6 +90,9 @@ def dislikes():
             result = dbtwitter_bot.insert_one(mongo_tweet) 
             
             return
+        
+        path = pathlib.Path().resolve()
+        print(path)
 
 
 
@@ -141,8 +144,7 @@ def dislikes():
         
      
 
-    
-    print(path)
+
     return
 
         
