@@ -66,6 +66,8 @@ def dislikes():
 
             if yt_from_web == 'youtube':
                 url_id = tweet.entities['urls'][0]['expanded_url'].split('v=')[-1].split('&t=')[0]
+                
+                print('Video from web')
 
         except:
             link_check += 1
@@ -76,6 +78,8 @@ def dislikes():
 
             if yt_from_cell == 'youtu.be':
                 url_id = tweet.entities['urls'][0]['expanded_url'].split('.be/')[-1]
+                
+                print('Video from app')
 
         except:
             link_check += 1
@@ -98,7 +102,7 @@ def dislikes():
 
             driver.get(tweet.entities['urls'][0]['expanded_url'])
 
-            sleep(7)
+            sleep(15)
 
             driver.find_element(By.XPATH, '/html/body/ytd-app/ytd-consent-bump-v2-lightbox/tp-yt-paper-dialog/div[4]/div[2]/div[5]/div[2]/ytd-button-renderer[2]/a/tp-yt-paper-button').click()
 
@@ -106,7 +110,7 @@ def dislikes():
 
             picture = driver.get_screenshot_as_png()
 
-            sleep(1)
+            sleep(2)
 
             driver.quit()
 
@@ -126,14 +130,19 @@ def dislikes():
             title = response['items'][0]['snippet']['title']
 
             api.update_status_with_media(status = title , filename = (str(path) + '\\cropped_screenshot.png'), in_reply_to_status_id = tweet.id)
+            
+            print('tweet replied')
                                 
         except:
-            pass
+            print('error')
 
         mongo_tweet = {'id_': tweet.id, 'date': tweet.created_at}
         result = dbtwitter_bot.insert_one(mongo_tweet)                              #Add the ID of the tweet to the MongoDB so we don´t answer it again
+        
+     
 
-
+    
+    print(path)
     return
 
         
