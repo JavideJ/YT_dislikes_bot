@@ -99,7 +99,7 @@ def dislikes():
         try:                
 
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_extension('Return-YouTube-Dislike.crx')                                                #We do web scraping to get an image with the likes/dislikes
+            chrome_options.add_extension('/app/Return-YouTube-Dislike.crx')                                                #We do web scraping to get an image with the likes/dislikes
             print('chrome_options ok')
             
             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
