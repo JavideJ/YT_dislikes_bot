@@ -16,7 +16,7 @@ import pathlib
 
 #Twitter
 consumer_key = os.environ['consumer_key']
-consumer_secret = os.environ['consumer_secret']                           #passwords to be used in Heroku
+consumer_secret = os.environ['consumer_secret']                           #passwords to be used on server
 access_token  = os.environ['access_token']
 access_token_secret = os.environ['access_token_secret']
 
@@ -92,19 +92,18 @@ def dislikes():
             return
         
         path = pathlib.Path().resolve()
-        print(path)
 
 
 
         try:                
 
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_extension('/app/Return-YouTube-Dislike.crx')                                                #We do web scraping to get an image with the likes/dislikes
+            chrome_options.add_extension(str(path) + '\\Return-YouTube-Dislike.crx')             #We do web scraping to get an image with the likes/dislikes using that extension
             print('chrome_options ok')
             
             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-            driver.get(tweet.entities['urls'][0]['expanded_url'])
+            driver.get(tweet.entities['urls'][0]['expanded_url'])                   #Open Chrome with the link of the video
 
             sleep(15)
 
@@ -112,7 +111,7 @@ def dislikes():
 
             sleep(3)
 
-            picture = driver.get_screenshot_as_png()
+            picture = driver.get_screenshot_as_png()                #screenshot
 
             sleep(2)
 
@@ -159,8 +158,6 @@ def dislikes():
         result = dbtwitter_bot.insert_one(mongo_tweet)                              #Add the ID of the tweet to the MongoDB so we don´t answer it again
         
      
-
-
     return
 
         
