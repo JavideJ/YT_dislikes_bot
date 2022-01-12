@@ -100,7 +100,8 @@ def dislikes():
 
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_extension('Return-YouTube-Dislike.crx')                                                #We do web scraping to get an image with the likes/dislikes
-
+            print('chrome_options ok')
+            
             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
             driver.get(tweet.entities['urls'][0]['expanded_url'])
@@ -116,6 +117,13 @@ def dislikes():
             sleep(2)
 
             driver.quit()
+            
+            print('scraping ok')
+           
+        except:
+            print('scraping bad')
+        
+        try:
 
             img = Image.open(BytesIO(picture))                           #Get the image, crop it and save it                         
             img = np.array(img)
@@ -123,7 +131,15 @@ def dislikes():
             crop_img = Image.fromarray(crop_img)
 
             crop_img.save('cropped_screenshot.png')
-
+            
+            print('image ok')
+            
+        except:
+            print('image bad ')
+            
+            
+        try:
+            
             path = pathlib.Path().resolve()
 
 
@@ -137,7 +153,7 @@ def dislikes():
             print('tweet replied')
                                 
         except:
-            print('error')
+            print('error tweet')
 
         mongo_tweet = {'id_': tweet.id, 'date': tweet.created_at}
         result = dbtwitter_bot.insert_one(mongo_tweet)                              #Add the ID of the tweet to the MongoDB so we don´t answer it again
