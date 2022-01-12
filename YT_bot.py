@@ -10,6 +10,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from PIL import Image
 from webdriver_manager.chrome import ChromeDriverManager
+from io import BytesIO
+import pathlib
 
 
 #Twitter
@@ -23,6 +25,9 @@ api_key = os.environ['api_key']
 
 #MongoDB
 mongo_client = os.environ['mongo_client']
+
+#Chromedriver
+chrome_driver = os.environ['chrome_driver_path']
 
 
 def dislikes():
@@ -87,12 +92,11 @@ def dislikes():
         try:                
 
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_extension(os.environ['return_dislikes_path'])                       #Here we add the dislikes YouTube extension from https://github.com/Anarios/return-youtube-dislike
-                                                                                                   #We didn´t need it before but now is impossible to retrieve the number of dislikes from the API
-                
+            chrome_options.add_extension('Return-YouTube-Dislike.crx')                                                #We do web scraping to get an image with the likes/dislikes
+
             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-            driver.get(tweet.entities['urls'][0]['expanded_url'])                                  #with Selenium, open the YouTube link in Chrome
+            driver.get(tweet.entities['urls'][0]['expanded_url'])
 
             sleep(7)
 
@@ -100,27 +104,28 @@ def dislikes():
 
             sleep(3)
 
-            driver.get_screenshot_as_file("screenshot.png")                        #Do a screenhot of the video
+            picture = driver.get_screenshot_as_png()
 
             sleep(1)
 
             driver.quit()
 
-            img = Image.open('screenshot.png')                         #Get the image, crop it and save it
+            img = Image.open(BytesIO(picture))                           #Get the image, crop it and save it                         
             img = np.array(img)
             crop_img = img[670:730, 370:]                        
             crop_img = Image.fromarray(crop_img)
 
             crop_img.save('cropped_screenshot.png')
 
+            path = pathlib.Path().resolve()
 
-            request = youtube.videos().list(part = ['snippet'], id = url_id)            #YouTube Data API to get the title of the video
-            
+
+            request = youtube.videos().list(part = ['snippet'], id = url_id)                       #on this part, we get the stats from the given YouTube video and generate
+                                                                                                                #a response with the number of likes, dislikes and percentages
             response = request.execute()
             title = response['items'][0]['snippet']['title']
 
-            api.update_status_with_media(status = title , filename = "cropped_screenshot.png", in_reply_to_status_id = tweet.id)            #Answer the tweet with the title of the video and the
-                                                                                                                                        #screenshot with the number of dislikes
+            api.update_status_with_media(status = title , filename = (str(path) + '\\cropped_screenshot.png'), in_reply_to_status_id = tweet.id)
                                 
         except:
             pass
