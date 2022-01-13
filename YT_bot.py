@@ -126,7 +126,7 @@ def dislikes():
 
             img = Image.open(BytesIO(picture))                           #Get the image, crop it and save it                         
             img = np.array(img)
-            crop_img = img[670:730, 370:]                        
+            crop_img = img[600:730, 370:]                        
             crop_img = Image.fromarray(crop_img)
 
             crop_img.save('cropped_screenshot.png')
